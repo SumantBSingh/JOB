@@ -1,0 +1,31 @@
+@{
+    ViewBag.Title = "Session Timeout";
+}
+
+<h2>Session Timeout</h2>
+<p>Your session has timed out. Please <a href="@Url.Action("Login", "Account")">log in</a> again.</p
+
+
+<authentication mode="Forms">
+  <forms loginUrl="~/Account/Login" timeout="20" slidingExpiration="true" defaultUrl="~/" timeoutUrl="~/Shared/SessionTimeout.cshtml" />
+</authentication>
+
+protected override void OnActionExecuting(ActionExecutingContext filterContext)
+{
+    HttpContext ctx = HttpContext.Current;
+
+    // check if session has timed out
+    if (ctx.Session != null && ctx.Session.IsNewSession)
+    {
+        string sessionCookie = ctx.Request.Headers["Cookie"];
+
+        if ((sessionCookie != null) && (sessionCookie.IndexOf("ASP.NET_SessionId") >= 0))
+        {
+            // redirect to the custom session timeout page
+            filterContext.Result = new RedirectResult("~/Shared/SessionTimeout.cshtml");
+            return;
+        }
+    }
+
+    base.OnActionExecuting(filterContext);
+}
